@@ -57,6 +57,8 @@ cleanup() {
     rm -f /tmp/get_namespaces_*_${PID}.out /tmp/*get_resources_*${PID}.out
 }
 
+trap cleanup INT
+
 while [ "${#}" -gt 0 ]
 do
     OPTION="${1}"
