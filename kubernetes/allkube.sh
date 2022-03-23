@@ -37,18 +37,16 @@ usage() {
     printf "    -c|--contexts <contexts>          Comma separated list of contexts to query\n"
     printf "    -D|--delete                       Delete all of the resources that are found\n"
     printf "    -e|--exclude-resources <pattern>  Resources matching this pattern will be excluded\n"
-    printf "    -E|--exclude-contexts <pattern>   Contexts matching this pattern will be excluded from query\n"
+    printf "    -E|--exclude-contexts <pattern>   Contexts matching this pattern will be excluded from query (default is '${EXCLUDE_CONTEXT_PATTERN}')\n"
     printf "    -f|--resource-filter <pattern>    Only resources matching this pattern will be included\n"
-    printf "    -F|--context-filter <pattern>     Only contexts matching this pattern will be queried\n"
+    printf "    -F|--context-filter <pattern>     Only contexts matching this pattern will be queried (default is '${CONTEXT_FILTER}')\n"
     printf "    -h|--help|help                    Print this usage information\n"
-    printf "    -r|--resource-type <resource>     Kubernetes resources type to get (default is 'pod')\n"
-    printf "    -y|--yes                          Answer yes to all prompts (USE WITH CAUTION)\n"
+    printf "    -j|--jobs <num>                   Number of jobs to run in parallel (default is ${JOBS})\n"
+    printf "    -r|--resource-type <resource>     Kubernetes resources type to get (default is '${RESOURCE_TYPE}')\n"
+    printf "    -y|--yes                          Answer yes to all prompts (USE WITH CAUTION, THIS COULD BE DESTRUCTIVE)\n\n"
 
     if [ -z "${error_msg}" ]
     then
-        printf "\nBy default, this script will check all contexts found with \`kubectl config get-contexts\`\n"
-        printf "containing 'gke' or 'eks', except those containing '-sec-' so that security clusters are not\n"
-        printf "checked.\n"
         exit
     else
         exit 1
