@@ -53,6 +53,10 @@ usage() {
     fi
 }
 
+cleanup() {
+    rm -f /tmp/get_namespaces_*_${PID}.out /tmp/*get_resources_*${PID}.out
+}
+
 while [ "${#}" -gt 0 ]
 do
     OPTION="${1}"
@@ -159,16 +163,25 @@ if ! [ -z "${RESOURCE_FILTER}" ]
 then
     if ! [ -z "${EXCLUDE_RESOURCE_PATTERN}" ]
     then
-        column -t -s' ' /tmp/get_resources_*_${PID}.out | grep -E -- "CONTEXT|${RESOURCE_FILTER}" | grep -Ev -- "${EXCLUDE_RESOURCE_PATTERN}" | tee "/tmp/final_get_resources_${PID}.out"
+        column -t -s' ' /tmp/get_resources_*_${PID}.out | grep -E -- "CONTEXT|${RESOURCE_FILTER}" | grep -Ev -- "${EXCLUDE_RESOURCE_PATTERN}" > "/tmp/final_get_resources_${PID}.out"
     else
-        column -t -s' ' /tmp/get_resources_*_${PID}.out | grep -E -- "CONTEXT|${RESOURCE_FILTER}" | tee "/tmp/final_get_resources_${PID}.out"
+        column -t -s' ' /tmp/get_resources_*_${PID}.out | grep -E -- "CONTEXT|${RESOURCE_FILTER}" > "/tmp/final_get_resources_${PID}.out"
     fi
 elif ! [ -z "${EXCLUDE_RESOURCE_PATTERN}" ]
 then
-    column -t -s' ' /tmp/get_resources_*_${PID}.out | grep -Ev -- "${EXCLUDE_RESOURCE_PATTERN}" | tee "/tmp/final_get_resources_${PID}.out"
+    column -t -s' ' /tmp/get_resources_*_${PID}.out | grep -Ev -- "${EXCLUDE_RESOURCE_PATTERN}" > "/tmp/final_get_resources_${PID}.out"
 else
-    column -t -s' ' /tmp/get_resources_*_${PID}.out | tee "/tmp/final_get_resources_${PID}.out"
+    column -t -s' ' /tmp/get_resources_*_${PID}.out > "/tmp/final_get_resources_${PID}.out"
 fi
+
+if [[ "$(wc -l < "/tmp/final_get_resources_${PID}.out")" -le 1 ]]
+then
+    echo "No resources found."
+    cleanup
+    exit
+fi
+
+cat "/tmp/final_get_resources_${PID}.out"
 
 delete_resource() {
     local resourcecontext="${1}"
@@ -208,4 +221,4 @@ then
     fi
 fi
 
-rm -f /tmp/get_namespaces_*_${PID}.out /tmp/*get_resources_*${PID}.out
+cleanup
