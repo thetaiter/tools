@@ -10,6 +10,8 @@ unset EXCLUDE_RESOURCE_PATTERN
 
 YES=false
 PID="${$}"
+AWS_VAULT=false
+AWS_VAULT_PROFILE='default'
 JOBS="$(sysctl -n hw.ncpu)"
 RESOURCE_TYPE='pod'
 declare -a NAMESPACES
@@ -37,12 +39,14 @@ usage() {
     printf "    -c|--contexts <contexts>          Comma separated list of contexts to query\n"
     printf "    -D|--delete                       Delete all of the resources that are found\n"
     printf "    -e|--exclude-resources <pattern>  Resources matching this pattern will be excluded\n"
-    printf "    -E|--exclude-contexts <pattern>   Contexts matching this pattern will be excluded from query (default is '${EXCLUDE_CONTEXT_PATTERN}')\n"
+    printf "    -E|--exclude-contexts <pattern>   Contexts matching this pattern will be excluded from query (default = '${EXCLUDE_CONTEXT_PATTERN}')\n"
     printf "    -f|--resource-filter <pattern>    Only resources matching this pattern will be included\n"
-    printf "    -F|--context-filter <pattern>     Only contexts matching this pattern will be queried (default is '${CONTEXT_FILTER}')\n"
+    printf "    -F|--context-filter <pattern>     Only contexts matching this pattern will be queried (default = '${CONTEXT_FILTER}')\n"
     printf "    -h|--help|help                    Print this usage information\n"
-    printf "    -j|--jobs <num>                   Number of jobs to run in parallel (default is ${JOBS})\n"
-    printf "    -r|--resource-type <resource>     Kubernetes resources type to get (default is '${RESOURCE_TYPE}')\n"
+    printf "    -j|--jobs <num>                   Number of jobs to run in parallel (default = ${JOBS})\n"
+    printf "    -r|--resource-type <resource>     Kubernetes resources type to get (default = '${RESOURCE_TYPE}')\n"
+    printf "    -v|--aws-vault                    Use AWS Vault to get credentials for EKS clusters (default = ${AWS_VAULT})\n"
+    printf "    -V|--aws-vault-profile <profile>  AWS Vault profile to use (default = '${AWS_VAULT_PROFILE}')\n"
     printf "    -y|--yes                          Answer yes to all prompts (USE WITH CAUTION, THIS COULD BE DESTRUCTIVE)\n\n"
 
     if [ -z "${error_msg}" ]
@@ -101,6 +105,14 @@ do
             RESOURCE_TYPE="${VALUE}"
             shift
         ;;
+        -v|--aws-vault)
+            AWS_VAULT=true
+        ;;
+        -V|--aws-vault-profile)
+            AWS_VAULT=true
+            AWS_VAULT_PROFILE="${VALUE}"
+            shift
+        ;;
         -y|--yes)
             YES=true
         ;;
@@ -130,6 +142,12 @@ else
     IFS=',' read -r -a CONTEXTS <<< "${CONTEXTS}"
 fi
 
+AWS_VAULT_COMMAND=''
+if [ "${AWS_VAULT}" = true ]
+then
+    AWS_VAULT_COMMAND="aws-vault exec ${AWS_VAULT_PROFILE} --"
+fi
+
 get_namespaces() {
     local c="${1}"
     local log="/tmp/get_namespaces_${c}_${PID}.out"
@@ -138,7 +156,7 @@ get_namespaces() {
 
 export PID
 export -f get_namespaces
-parallel -j "${JOBS}" "get_namespaces '{}'" ::: "${CONTEXTS[@]}"
+${AWS_VAULT_COMMAND} parallel -j "${JOBS}" "get_namespaces '{}'" ::: "${CONTEXTS[@]}"
 
 get_resources() {
     local c="${1}"
@@ -153,7 +171,7 @@ get_resources() {
 
 export RESOURCE_TYPE
 export -f get_resources
-parallel -j "${JOBS}" --plus "get_resources '{1}' '{2}'" ::: "${CONTEXTS[@]}" ::: "${NAMESPACES[@]}"
+${AWS_VAULT_COMMAND} parallel -j "${JOBS}" --plus "get_resources '{1}' '{2}'" ::: "${CONTEXTS[@]}" ::: "${NAMESPACES[@]}"
 
 files=( /tmp/get_resources_*_${PID}.out )
 printf "CONTEXT NAMESPACE $(head -1 "${files[0]}" | cut -d' ' -f3-)\n" > "/tmp/get_resources_1_${PID}.out"
@@ -216,7 +234,7 @@ then
 
         export RESOURCE_TYPE
         export -f delete_resource
-        parallel -j "${JOBS}" "delete_resource '{}'" ::: "${RESOURCES[@]}"
+        ${AWS_VAULT_COMMAND} parallel -j "${JOBS}" "delete_resource '{}'" ::: "${RESOURCES[@]}"
     else
         printf "Aborting.\n"
         exit 1
