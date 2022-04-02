@@ -15,6 +15,7 @@ usage() {
     echo "Usage: ${SCRIPT_NAME} <secret-path> <secret-pattern>"
     echo
     echo "<secret-path> is the base path in Vault to start searching in"
+    echo "<secret-pattern> is the pattern to search for in secret values"
 
     if ! [ -z "${error_msg}" ]
     then
@@ -44,9 +45,9 @@ parse_args() {
                 if [ -z "${SECRET_PATH}" ]
                 then
                     SECRET_PATH="${OPTION}"
-                elif [ -z "${SECRET_VALUE}" ]
+                elif [ -z "${SECRET_PATTERN}" ]
                 then
-                    SECRET_VALUE="${OPTION}"
+                    SECRET_PATTERN="${OPTION}"
                 else
                     usage "Unknown option '${OPTION}'"
                 fi
@@ -63,9 +64,9 @@ check_secret() {
 
     if [[ "${path}" != */ ]]
     then
-        local secret_value="$(vault kv get -format=json "${path}" 2> /dev/null | jq -r '.data.data')"
+        local SECRET_PATTERN="$(vault kv get -format=json "${path}" 2> /dev/null | jq -r '.data.data')"
 
-        if [[ "${secret_value}" == *"${value}"* ]]
+        if [[ "${SECRET_PATTERN}" == *"${value}"* ]]
         then
             echo "${path}"
         fi
@@ -89,7 +90,7 @@ export -f find_secret
 
 main() {
     parse_args "${@}"
-    find_secret "${SECRET_PATH}" "${SECRET_VALUE}" | sort -u
+    find_secret "${SECRET_PATH}" "${SECRET_PATTERN}" | sort -u
 }
 
 main "${@}"
