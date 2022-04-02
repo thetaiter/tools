@@ -64,9 +64,9 @@ check_secret() {
 
     if [[ "${path}" != */ ]]
     then
-        local SECRET_PATTERN="$(vault kv get -format=json "${path}" 2> /dev/null | jq -r '.data.data')"
+        local secret_value="$(vault kv get -format=json "${path}" 2> /dev/null | jq -r '.data.data')"
 
-        if [[ "${SECRET_PATTERN}" == *"${value}"* ]]
+        if [[ "${secret_value}" == *"${value}"* ]]
         then
             echo "${path}"
         fi
