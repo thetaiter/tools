@@ -15,7 +15,7 @@ do
         username="$("${SCRIPT_DIR}/get-iam-user-from-access-key.sh" --aws-profile "${aws_profile}" "${access_key_id}" 2> /dev/null)"
         if [ -n "${username}" ]
         then
-            echo "Found '${username}' for access key '${access_key_id}' in account associated with AWS profile '${aws_profile}'"
+            echo "Found username '${username}' for access key '${access_key_id}' in account associated with AWS profile '${aws_profile}'"
             break
         fi
     done
