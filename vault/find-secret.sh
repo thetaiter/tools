@@ -18,7 +18,7 @@ usage() {
 
     if ! [ -z "${error_msg}" ]
     then
-        echo "${error_msg}" >&2
+        echo "Error: ${error_msg}" >&2
         echo
     fi
 
@@ -76,6 +76,14 @@ parse_args() {
 
         shift
     done
+
+    if [ -z "${SECRET_PATH}" ]
+    then
+        usage "No secret path was provided"
+    elif [ -z "${SECRET_PATTERNS[*]}" ]
+    then
+        usage "No secret patterns were provided"
+    fi
 
     SECRET_PATTERNS=( $(tr ' ' '\n' <<< "${SECRET_PATTERNS[@]}" | sort -u | tr '\n' ' ') )
 }
