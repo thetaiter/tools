@@ -1,8 +1,4 @@
-#!/bin/bash -e
-
-PID="${$}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-SCRIPT_NAME="$(basename "$(test -L "${0}" && readlink "${0}" || echo "${0}")")"
+#!/bin/bash
 
 declare -a IDENTIFIER_LIST=( $(cat "${1:-./identifiers.txt}") )
 INCLUDE_BLOB='*USA*.zip|*En,*.zip'
@@ -12,7 +8,7 @@ function urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 for identifier in "${IDENTIFIER_LIST[@]}"
 do
     # Generate ewxclude blob
-    EXCLUDE_BLOB='* Demo *|*(Proto)*|*Demo Disk*|*Demo 1*|*Demo 2*|*Bonus Demo*|*(Beta)*|*Demo Disc*|*Demo)*|*Beta 1*|*Beta 2*|*Beta 3*'
+    EXCLUDE_BLOB='* Demo *|*(Proto)*|*Demo Disk*|*Demo 1*|*Demo 2*|*Bonus Demo*|*(Beta)*|*Demo Disc*|*Demo)*|*Beta 1*|*Beta 2*|*Beta 3*|*Dance Factory*|*Dynasty Warriors 2*|*Gran Turismo 4*|*Guitar Hero - Van Halen*|*Operation WinBack*|*Poinie'"'"'s Poin*'
     FILES=( $(ia download --search "identifier:${identifier}" --glob "${INCLUDE_BLOB}" --exclude "${EXCLUDE_BLOB}" --no-directories --dry-run) )
 
     oIFS="${IFS}"
@@ -61,5 +57,11 @@ do
 
     echo "Downloading files from identifier ${identifier}"
     ia download --search "identifier:${identifier}" --glob "${INCLUDE_BLOB}" --exclude "${EXCLUDE_BLOB}" --no-directories
-    read -p "Finished downloading files from ${identifier}. Press enter to continue..."
+    printf -- "Finished downloading files from ${identifier}."
+    if [ "${1}" == '-w' ]
+    then
+        read -p " Press enter to continue..."
+    else
+        echo
+    fi
 done

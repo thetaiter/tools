@@ -1,9 +1,5 @@
 #!/bin/bash -e
 
-PID="${$}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-SCRIPT_NAME="$(basename "$(test -L "${0}" && readlink "${0}" || echo "${0}")")"
-
 if compgen -G "*.zip" > /dev/null
 then
     for file in *.zip
@@ -63,3 +59,4 @@ then
 else
     echo "No zip files found."
 fi
+
