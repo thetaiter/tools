@@ -1,8 +1,4 @@
-#!/bin/bash -e
-
-PID="${$}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-SCRIPT_NAME="$(basename "$(test -L "${0}" && readlink "${0}" || echo "${0}")")"
+#!/bin/bash
 
 declare -a IDENTIFIER_LIST=( $(cat "${1:-./identifiers.txt}") )
 INCLUDE_BLOB='*USA*.zip|*En,*.zip'
@@ -63,3 +59,4 @@ do
     ia download --search "identifier:${identifier}" --glob "${INCLUDE_BLOB}" --exclude "${EXCLUDE_BLOB}" --no-directories
     read -p "Finished downloading files from ${identifier}. Press enter to continue..."
 done
+
