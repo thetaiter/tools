@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Example usage:
+# $ ./download_sequential.sh -w -i '*USA*.zip|*En,*.zip' -e '* Demo *|*(Proto)*|*Demo Disk*|*Demo 1*|*Demo 2*|*Bonus Demo*|*(Beta)*|*Demo Disc*|*Demo)*|*Beta 1*|*Beta 2*|*Beta 3*|*Dance Factory*|*Dynasty Warriors 2*|*Gran Turismo 4*|*Guitar Hero - Van Halen*|*Operation WinBack*|*Poinie'"'"'s Poin*|*Action Replay*'
+
 SCRIPT_NAME="$(basename "$(test -L "${0}" && readlink "${0}" || echo "${0}")")"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
